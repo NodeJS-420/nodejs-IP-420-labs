@@ -1,6 +1,9 @@
 const express = require('express');
 const path = require('path');
-const routes = require('./routes/index');
+const languageRoutes = require('./routes/languageRoutes');
+const dictionaryRoutes = require('./routes/dictionaryRoutes');
+const translationRoutes = require('./routes/translationRoutes');
+const wordRoutes = require('./routes/wordRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +15,10 @@ app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use('/', routes);
+app.use('/', languageRoutes);
+app.use('/', dictionaryRoutes);
+app.use('/', translationRoutes);
+app.use('/', wordRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

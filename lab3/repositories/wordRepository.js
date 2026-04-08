@@ -1,12 +1,18 @@
-const fs = require('fs').promises;
+const { readJsonPromise } = require('../utils/fileLoaders');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../data/words.json');
+const dataPath = path.join('data', 'words.json');
 
-const getAll = () => {
-    return fs.readFile(filePath, 'utf8')
-        .then(data => JSON.parse(data))
-        .catch(err => console.log(err));
-};
+class WordRepository {
+	constructor() {}
 
-module.exports = { getAll };
+	findAll() {
+		return readJsonPromise(dataPath);
+	}
+
+	findOne(id) {
+		return this.findAll().then(items => items.find(x => x.id === parseInt(id)) || null);
+	}
+}
+
+module.exports = new WordRepository();

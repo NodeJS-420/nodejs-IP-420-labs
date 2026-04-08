@@ -1,13 +1,22 @@
-const fs = require('fs');
+const { readJsonCallback } = require('../utils/fileLoaders');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../data/dictionaries.json');
+const dataPath = path.join('data', 'dictionaries.json');
 
-const getAll = (callback) => {
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) return callback(err, null);
-        callback(null, JSON.parse(data));
-    });
-};
+class DictionaryRepository {
+    constructor() { }
 
-module.exports = { getAll };
+    findAll(callback) {
+        readJsonCallback(dataPath, callback);
+    }
+
+    findOne(id, callback) {
+        this.findAll((err, items) => {
+            if (err) return callback(err, null);
+            const found = items.find(x => x.id === parseInt(id)) || null;
+            callback(null, found);
+        });
+    }
+}
+
+module.exports = new DictionaryRepository();

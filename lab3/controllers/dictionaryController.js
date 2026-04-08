@@ -1,10 +1,16 @@
 const dictionaryService = require('../services/dictionaryService');
 
-const getDictionaries = (req, res) => {
-    dictionaryService.getAllDictionaries((err, data) => {
-        if (err) return res.status(500).send("Помилка сервера");
-        res.json(data); 
-    });
-};
+class DictionaryController {
+    constructor(service = dictionaryService) {
+        this.service = service;
+    }
 
-module.exports = { getDictionaries };
+    getDictionaries(req, res) {
+        this.service.findAll((err, data) => {
+            if (err) return res.status(500).send("Помилка сервера");
+            res.json(data);
+        });
+    }
+}
+
+module.exports = new DictionaryController();

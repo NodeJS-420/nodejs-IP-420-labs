@@ -1,7 +1,21 @@
 const languageRepository = require('../repositories/languageRepository');
 
-const getAllLanguages = () => {
-    return languageRepository.getAll();
-};
+class LanguageService {
+    constructor(repository = languageRepository) {
+        this.repository = repository;
+    }
 
-module.exports = { getAllLanguages };
+    findAll() {
+        return this.repository.findAll();
+    }
+
+    findOne() { }
+
+    create() { }
+
+    update() { }
+
+    delete() { }
+}
+
+module.exports = new LanguageService();
