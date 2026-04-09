@@ -1,15 +1,19 @@
-const fs = require('fs').promises;
+const { readJsonAsync } = require('../utils/fileLoaders');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../data/translations.json');
+const dataPath = path.join('data', 'translations.json');
 
-const getAll = async () => {
-    try {
-        const data = await fs.readFile(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error("Помилка завантаження перекладів:", err); 
-    }
-};
+class TranslationRepository {
+	constructor() {}
 
-module.exports = { getAll };
+	async findAll() {
+		return await readJsonAsync(dataPath);
+	}
+
+	async findOne(id) {
+		const items = await this.findAll();
+		return items.find(x => x.id === parseInt(id)) || null;
+	}
+}
+
+module.exports = new TranslationRepository();

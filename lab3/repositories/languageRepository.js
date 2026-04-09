@@ -1,11 +1,19 @@
-const fs = require('fs');
+const { readJsonSync } = require('../utils/fileLoaders');
 const path = require('path');
 
-const filePath = path.join(__dirname, '../data/languages.json');
+const dataPath = path.join('data', 'languages.json');
 
-const getAll = () => {
-    const data = fs.readFileSync(filePath, 'utf8'); 
-    return JSON.parse(data);
-};
+class LanguageRepository {
+	constructor() {}
 
-module.exports = { getAll };
+	findAll() {
+		return readJsonSync(dataPath);
+	}
+
+	findOne(id) {
+		const items = this.findAll();
+		return items.find(x => x.id === parseInt(id)) || null;
+	}
+}
+
+module.exports = new LanguageRepository();

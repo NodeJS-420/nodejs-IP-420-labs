@@ -1,8 +1,14 @@
 const languageService = require('../services/languageService');
 
-const getLanguages = (req, res) => {
-    const languages = languageService.getAllLanguages();
-    res.json(languages); 
-};
+class LanguageController {
+    constructor(service = languageService) {
+        this.service = service;
+    }
 
-module.exports = { getLanguages };
+    getLanguages(req, res) {
+        const languages = this.service.findAll();
+        res.json(languages);
+    }
+}
+
+module.exports = new LanguageController();

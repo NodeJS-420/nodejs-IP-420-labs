@@ -16,5 +16,17 @@
     "dictionaryId": 2,
     "sourceWordId": 3,
     "targetWordId": 1
+  },
+  {
+    "id": 4,
+    "dictionaryId": 1,
+    "sourceWordId": 6,
+    "targetWordId": 5
+  },
+  {
+    "id": 5,
+    "dictionaryId": 2,
+    "sourceWordId": 5,
+    "targetWordId": 6
   }
 ]

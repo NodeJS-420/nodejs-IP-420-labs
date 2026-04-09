@@ -1,7 +1,21 @@
 const dictionaryRepository = require('../repositories/dictionaryRepository');
 
-const getAllDictionaries = (callback) => {
-    dictionaryRepository.getAll(callback); 
-};
+class DictionaryService {
+    constructor(repository = dictionaryRepository) {
+        this.repository = repository;
+    }
 
-module.exports = { getAllDictionaries };
+    findAll(callback) {
+        this.repository.findAll(callback);
+    }
+
+    findOne() {}
+
+    create() {}
+
+    update() {}
+
+    delete() {}
+}
+
+module.exports = new DictionaryService();
