@@ -1,6 +1,5 @@
 const WordRepository = require('../repositories/wordRepository');
 const TranslationRepository = require('../repositories/translationRepository');
-const UnitOfWork = require('../db/UnitOfWork'); 
 
 class TranslationService {
     constructor() {
@@ -57,38 +56,6 @@ class TranslationService {
         return targetWord.text;
     }
 
-    
-    // TRANSACTION EXAMPLE
-    
-    async createWordWithTranslation(dictionaryId, sourceWordData, targetWordId) {
-        const uow = new UnitOfWork();
-        
-        try {
-            await uow.start(); // BEGIN - початок транзакції
-
-            // 1. Ініціалізуємо репозиторії транзакційним клієнтом
-            const wordRepo = new WordRepository(uow.getClient());
-            const translationRepo = new TranslationRepository(uow.getClient());
-
-            // 2. Створюємо нове слово
-            const newWord = await wordRepo.create(sourceWordData);
-
-            // 3. Створюємо переклад, прив'язаний до нового слова
-            const newTranslation = await translationRepo.create({
-                dictionaryId: dictionaryId,
-                sourceWordId: newWord.id,
-                targetWordId: targetWordId
-            });
-
-            await uow.commit(); // COMMIT - успішно зберігаємо
-            return { word: newWord, translation: newTranslation };
-
-        } catch (error) {
-            await uow.rollback(); // ROLLBACK - відміняємо зміни, якщо була помилка
-            console.error("Transaction failed and rolled back:", error.message);
-            throw error;
-        }
-    }
 }
 
 module.exports = new TranslationService();
