@@ -1,69 +1,53 @@
-const { readJsonAsync } = require('../utils/fileLoaders');
-const path = require('path');
-const fs = require('fs');
-
-const dataPath = path.join('data', 'translations.json');
+const pool = require('../db/db');
 
 class TranslationRepository {
-	constructor() {}
+    constructor(client = pool) {
+        this.client = client;
+    }
 
-	async findAll() {
-		return await readJsonAsync(dataPath);
-	}
+    async findAll() {
+        const { rows } = await this.client.query(
+            'SELECT id, dictionary_id AS "dictionaryId", source_word_id AS "sourceWordId", target_word_id AS "targetWordId" FROM translations'
+        );
+        return rows;
+    }
 
-	async findOne(id) {
-		const items = await this.findAll();
-		return items.find(x => x.id === parseInt(id)) || null;
-	}
+    async findOne(id) {
+        const { rows } = await this.client.query(
+            'SELECT id, dictionary_id AS "dictionaryId", source_word_id AS "sourceWordId", target_word_id AS "targetWordId" FROM translations WHERE id = $1',
+            [id]
+        );
+        return rows[0] || null;
+    }
 
-	async create(translation) {
-		const items = await this.findAll();
+    async create(translation) {
+        const { rows } = await this.client.query(
+            'INSERT INTO translations (dictionary_id, source_word_id, target_word_id) VALUES ($1, $2, $3) RETURNING id, dictionary_id AS "dictionaryId", source_word_id AS "sourceWordId", target_word_id AS "targetWordId"',
+            [translation.dictionaryId, translation.sourceWordId, translation.targetWordId]
+        );
+        return rows[0];
+    }
 
-		const newTranslation = {
-			id: Date.now(),
-			dictionaryId: translation.dictionaryId,
-			sourceWordId: translation.sourceWordId,
-			targetWordId: translation.targetWordId
-		};
+    async update(id, translation) {
+        const { rows } = await this.client.query(
+            `UPDATE translations 
+             SET dictionary_id = COALESCE($1, dictionary_id), 
+                 source_word_id = COALESCE($2, source_word_id), 
+                 target_word_id = COALESCE($3, target_word_id) 
+             WHERE id = $4 
+             RETURNING id, dictionary_id AS "dictionaryId", source_word_id AS "sourceWordId", target_word_id AS "targetWordId"`,
+            [translation.dictionaryId, translation.sourceWordId, translation.targetWordId, id]
+        );
+        return rows[0] || null;
+    }
 
-		items.push(newTranslation);
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return newTranslation;
-	}
-
-	async update(id, translation) {
-		const items = await this.findAll();
-		const index = items.findIndex(x => x.id === parseInt(id));
-
-		if (index === -1) return null;
-
-		const updatedTranslation = {
-			...items[index],
-			dictionaryId: translation.dictionaryId || items[index].dictionaryId,
-			sourceWordId: translation.sourceWordId || items[index].sourceWordId,
-			targetWordId: translation.targetWordId || items[index].targetWordId
-		};
-
-		items[index] = updatedTranslation;
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return updatedTranslation;
-	}
-
-	async delete(id) {
-		const items = await this.findAll();
-		const index = items.findIndex(x => x.id === parseInt(id));
-
-		if (index === -1) return null;
-
-		const deletedTranslation = items[index];
-		items.splice(index, 1);
-
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return deletedTranslation;
-	}
+    async delete(id) {
+        const { rows } = await this.client.query(
+            'DELETE FROM translations WHERE id = $1 RETURNING id, dictionary_id AS "dictionaryId", source_word_id AS "sourceWordId", target_word_id AS "targetWordId"',
+            [id]
+        );
+        return rows[0] || null;
+    }
 }
 
-module.exports = new TranslationRepository();
+module.exports = TranslationRepository;

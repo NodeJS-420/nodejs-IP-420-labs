@@ -1,78 +1,53 @@
-const { readJsonCallback } = require('../utils/fileLoaders');
-const path = require('path');
-const fs = require('fs');
-
-const dataPath = path.join('data', 'dictionaries.json');
+const pool = require('../db/db');
 
 class DictionaryRepository {
-    constructor() { }
-
-    findAll(callback) {
-        readJsonCallback(dataPath, callback);
+    constructor(client = pool) {
+        this.client = client;
     }
 
-    findOne(id, callback) {
-        this.findAll((err, items) => {
-            if (err) return callback(err, null);
-            const found = items.find(x => x.id === parseInt(id)) || null;
-            callback(null, found);
-        });
+    async findAll() {
+        const { rows } = await this.client.query(
+            'SELECT id, name, source_lang_id AS "sourceLangId", target_lang_id AS "targetLangId" FROM dictionaries'
+        );
+        return rows;
     }
 
-    create(dictionary, callback) {
-        this.findAll((err, items) => {
-            if (err) return callback(err, null);
-
-            const newDictionary = {
-                id: Date.now(),
-                name: dictionary.name,
-                sourceLangId: dictionary.sourceLangId,
-                targetLangId: dictionary.targetLangId
-            };
-
-            items.push(newDictionary);
-            fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-            callback(null, newDictionary);
-        });
+    async findOne(id) {
+        const { rows } = await this.client.query(
+            'SELECT id, name, source_lang_id AS "sourceLangId", target_lang_id AS "targetLangId" FROM dictionaries WHERE id = $1',
+            [id]
+        );
+        return rows[0] || null;
     }
 
-    update(id, dictionary, callback) {
-        this.findAll((err, items) => {
-            if (err) return callback(err, null);
-
-            const index = items.findIndex(x => x.id === parseInt(id));
-            if (index === -1) return callback(null, null);
-
-            const updatedDictionary = {
-                ...items[index],
-                name: dictionary.name || items[index].name,
-                sourceLangId: dictionary.sourceLangId || items[index].sourceLangId,
-                targetLangId: dictionary.targetLangId || items[index].targetLangId
-            };
-
-            items[index] = updatedDictionary;
-            fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-            callback(null, updatedDictionary);
-        });
+    async create(dictionary) {
+        const { rows } = await this.client.query(
+            'INSERT INTO dictionaries (name, source_lang_id, target_lang_id) VALUES ($1, $2, $3) RETURNING id, name, source_lang_id AS "sourceLangId", target_lang_id AS "targetLangId"',
+            [dictionary.name, dictionary.sourceLangId, dictionary.targetLangId]
+        );
+        return rows[0];
     }
 
-    delete(id, callback) {
-        this.findAll((err, items) => {
-            if (err) return callback(err, null);
+    async update(id, dictionary) {
+        const { rows } = await this.client.query(
+            `UPDATE dictionaries 
+             SET name = COALESCE($1, name), 
+                 source_lang_id = COALESCE($2, source_lang_id), 
+                 target_lang_id = COALESCE($3, target_lang_id) 
+             WHERE id = $4 
+             RETURNING id, name, source_lang_id AS "sourceLangId", target_lang_id AS "targetLangId"`,
+            [dictionary.name, dictionary.sourceLangId, dictionary.targetLangId, id]
+        );
+        return rows[0] || null;
+    }
 
-            const index = items.findIndex(x => x.id === parseInt(id));
-            if (index === -1) return callback(null, null);
-
-            const deletedDictionary = items[index];
-            items.splice(index, 1);
-
-            fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-            callback(null, deletedDictionary);
-        });
+    async delete(id) {
+        const { rows } = await this.client.query(
+            'DELETE FROM dictionaries WHERE id = $1 RETURNING id, name, source_lang_id AS "sourceLangId", target_lang_id AS "targetLangId"',
+            [id]
+        );
+        return rows[0] || null;
     }
 }
 
-module.exports = new DictionaryRepository();
+module.exports = DictionaryRepository;

@@ -1,70 +1,43 @@
-const { readJsonSync } = require('../utils/fileLoaders');
-const path = require('path');
-const fs = require('fs');
-
-const dataPath = path.join('data', 'languages.json');
+const pool = require('../db/db'); 
 
 class LanguageRepository {
-	constructor() {}
+    constructor(client = pool) {
+        this.client = client;
+    }
 
-	findAll() {
-		return readJsonSync(dataPath);
-	}
+    async findAll() {
+        const { rows } = await this.client.query('SELECT id, name FROM languages');
+        return rows;
+    }
 
-	findOne(id) {
-		const items = this.findAll();
-		return items.find(x => x.id === parseInt(id)) || null;
-	}
+    async findOne(id) {
+        const { rows } = await this.client.query('SELECT id, name FROM languages WHERE id = $1', [id]);
+        return rows[0] || null;
+    }
 
-	create(language) {
-		const items = this.findAll();
+    async create(language) {
+        const { rows } = await this.client.query(
+            'INSERT INTO languages (name) VALUES ($1) RETURNING id, name',
+            [language.name]
+        );
+        return rows[0];
+    }
 
-		const newLanguage = {
-		id: Date.now(),
-		name: language.name
-		};
+    async update(id, language) {
+        const { rows } = await this.client.query(
+            'UPDATE languages SET name = COALESCE($1, name) WHERE id = $2 RETURNING id, name',
+            [language.name, id]
+        );
+        return rows[0] || null;
+    }
 
-		items.push(newLanguage);
-
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return newLanguage;
-	}
-
-	update(id, language) {
-		const items = this.findAll();
-		const index = items.findIndex(x => x.id === parseInt(id));
-
-		if (index === -1) {
-			return null;
-		}
-
-		const updatedLanguage = {
-			...items[index],
-			name: language.name || items[index].name
-		};
-
-		items[index] = updatedLanguage;
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return updatedLanguage;
-	}
-
-	delete(id) {
-		const items = this.findAll();
-		const index = items.findIndex(x => x.id === parseInt(id));
-
-		if (index === -1) {
-			return null;
-		}
-
-		const deletedLanguage = items[index];
-		items.splice(index, 1);
-
-		fs.writeFileSync(dataPath, JSON.stringify(items, null, 2));
-
-		return deletedLanguage;
-	}
+    async delete(id) {
+        const { rows } = await this.client.query(
+            'DELETE FROM languages WHERE id = $1 RETURNING id, name',
+            [id]
+        );
+        return rows[0] || null;
+    }
 }
 
-module.exports = new LanguageRepository();
+module.exports = LanguageRepository;

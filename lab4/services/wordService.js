@@ -1,55 +1,38 @@
-const wordRepository = require('../repositories/wordRepository');
+const WordRepository = require('../repositories/wordRepository');
 
 class WordService {
-	constructor(repository = wordRepository) {
-		this.repository = repository;
+	constructor() {
+		this.repository = new WordRepository();
 	}
 
-	findAll() {
-		return this.repository.findAll()
-			.then(data => data)
-			.catch(err => Promise.reject(err));
+	async findAll() {
+		return await this.repository.findAll();
 	}
 
-	findOne(id) {
-		return this.repository.findOne(id)
-			.then(data => data)
-			.catch(err => Promise.reject(err));
+	async findOne(id) {
+		return await this.repository.findOne(id);
 	}
 
-	create(data) {
+	async create(data) {
 		if (!data.text || !data.langId) {
-			return Promise.reject(new Error("Word text and langId are required"));
+			throw new Error("Word text and langId are required");
 		}
-		return this.repository.create(data)
-			.then(data => data)
-			.catch(err => Promise.reject(err));
+		return await this.repository.create(data);
 	}
 
-	update(id, data) {
-		if (!id) {
-			return Promise.reject(new Error("Word ID is required"));
-		}
-		return this.repository.update(id, data)
-			.then(result => {
-				if (!result) throw new Error("Word not found");
-				return result;
-			})
-			.catch(err => Promise.reject(err));
+	async update(id, data) {
+		if (!id) throw new Error("Word ID is required");
+		const result = await this.repository.update(id, data);
+		if (!result) throw new Error("Word not found");
+		return result;
 	}
 
-	delete(id) {
-		if (!id) {
-			return Promise.reject(new Error("Word ID is required"));
-		}
-		return this.repository.delete(id)
-			.then(result => {
-				if (!result) throw new Error("Word not found");
-				return result;
-			})
-			.catch(err => Promise.reject(err));
+	async delete(id) {
+		if (!id) throw new Error("Word ID is required");
+		const result = await this.repository.delete(id);
+		if (!result) throw new Error("Word not found");
+		return result;
 	}
 }
 
 module.exports = new WordService();
-

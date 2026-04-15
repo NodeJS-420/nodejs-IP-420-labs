@@ -1,45 +1,37 @@
-const dictionaryRepository = require('../repositories/dictionaryRepository');
+const DictionaryRepository = require('../repositories/dictionaryRepository');
 
 class DictionaryService {
-    constructor(repository = dictionaryRepository) {
-        this.repository = repository;
+    constructor() {
+        this.repository = new DictionaryRepository();
     }
 
-    findAll(callback) {
-        this.repository.findAll(callback);
+    async findAll() {
+        return await this.repository.findAll();
     }
 
-    findOne(id, callback) {
-        this.repository.findOne(id, callback);
+    async findOne(id) {
+        return await this.repository.findOne(id);
     }
 
-    create(data, callback) {
+    async create(data) {
         if (!data.name || !data.sourceLangId || !data.targetLangId) {
-            return callback(new Error("Dictionary name, sourceLangId and targetLangId are required"), null);
+            throw new Error("Dictionary name, sourceLangId and targetLangId are required");
         }
-        this.repository.create(data, callback);
+        return await this.repository.create(data);
     }
 
-    update(id, data, callback) {
-        if (!id) {
-            return callback(new Error("Dictionary ID is required"), null);
-        }
-        this.repository.update(id, data, (err, result) => {
-            if (err) return callback(err, null);
-            if (!result) return callback(new Error("Dictionary not found"), null);
-            callback(null, result);
-        });
+    async update(id, data) {
+        if (!id) throw new Error("Dictionary ID is required");
+        const result = await this.repository.update(id, data);
+        if (!result) throw new Error("Dictionary not found");
+        return result;
     }
 
-    delete(id, callback) {
-        if (!id) {
-            return callback(new Error("Dictionary ID is required"), null);
-        }
-        this.repository.delete(id, (err, result) => {
-            if (err) return callback(err, null);
-            if (!result) return callback(new Error("Dictionary not found"), null);
-            callback(null, result);
-        });
+    async delete(id) {
+        if (!id) throw new Error("Dictionary ID is required");
+        const result = await this.repository.delete(id);
+        if (!result) throw new Error("Dictionary not found");
+        return result;
     }
 }
 
