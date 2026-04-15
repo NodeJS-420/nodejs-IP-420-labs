@@ -1,10 +1,10 @@
-const wordRepository = require('../repositories/wordRepository');
-const translationRepository = require('../repositories/translationRepository');
+const WordRepository = require('../repositories/wordRepository');
+const TranslationRepository = require('../repositories/translationRepository');
 
 class TranslationService {
-    constructor(wordRepo = wordRepository, translationRepo = translationRepository) {
-        this.wordRepository = wordRepo;
-        this.translationRepository = translationRepo;
+    constructor() {
+        this.wordRepository = new WordRepository();
+        this.translationRepository = new TranslationRepository();
     }
 
     async findAll() {
@@ -23,24 +23,16 @@ class TranslationService {
     }
 
     async update(id, data) {
-        if (!id) {
-            throw new Error("Translation ID is required");
-        }
+        if (!id) throw new Error("Translation ID is required");
         const result = await this.translationRepository.update(id, data);
-        if (!result) {
-            throw new Error("Translation not found");
-        }
+        if (!result) throw new Error("Translation not found");
         return result;
     }
 
     async delete(id) {
-        if (!id) {
-            throw new Error("Translation ID is required");
-        }
+        if (!id) throw new Error("Translation ID is required");
         const result = await this.translationRepository.delete(id);
-        if (!result) {
-            throw new Error("Translation not found");
-        }
+        if (!result) throw new Error("Translation not found");
         return result;
     }
 
@@ -50,25 +42,20 @@ class TranslationService {
             this.translationRepository.findAll(),
         ]);
 
-        const sourceWord = words.find(
-            w => w.text.toLowerCase() === String(wordText).toLowerCase()
-        );
+        const sourceWord = words.find(w => w.text.toLowerCase() === String(wordText).toLowerCase());
         if (!sourceWord) return null;
 
-        const translationEntry = translations.find(
-            t => t.sourceWordId === sourceWord.id
-        );
+        const translationEntry = translations.find(t => t.sourceWordId === sourceWord.id);
         if (!translationEntry) return null;
 
         const targetWord = words.find(w => w.id === translationEntry.targetWordId);
         if (!targetWord) return null;
 
-        if (targetLangId && targetWord.langId !== parseInt(targetLangId)) {
-            return null;
-        }
+        if (targetLangId && targetWord.langId !== parseInt(targetLangId)) return null;
 
         return targetWord.text;
     }
+
 }
 
 module.exports = new TranslationService();

@@ -5,53 +5,52 @@ class DictionaryController {
     this.service = service;
   }
 
-  getDictionaries(req, res) {
-    this.service.findAll((err, data) => {
-      if (err) return res.status(500).render("error", { error: err.message });
-      res.render("dictionaries", { dictionaries: data });
-    });
+  async getDictionaries(req, res) {
+    try {
+        const data = await this.service.findAll();
+        res.render("dictionaries", { dictionaries: data });
+    } catch(err) {
+        res.status(500).render("error", { error: err.message });
+    }
   }
 
-  getDictionaryById(req, res) {
-    this.service.findOne(req.params.id, (err, data) => {
-      if (err) return res.status(500).render("error", { error: err.message });
-      if (!data)
-        return res
-          .status(404)
-          .render("error", { error: "Dictionary not found" });
-      res.json(data);
-    });
+  async getDictionaryById(req, res) {
+    try {
+        const data = await this.service.findOne(req.params.id);
+        if (!data) return res.status(404).render("error", { error: "Dictionary not found" });
+        res.json(data);
+    } catch(err) {
+        res.status(500).render("error", { error: err.message });
+    }
   }
 
-  createDictionary(req, res) {
-    this.service.create(req.body, (err, data) => {
-      if (err) return res.status(400).render("error", { error: err.message });
-      res.status(201).json(data);
-    });
+  async createDictionary(req, res) {
+    try {
+        const data = await this.service.create(req.body);
+        res.status(201).json(data);
+    } catch(err) {
+        res.status(400).render("error", { error: err.message });
+    }
   }
 
-  updateDictionary(req, res) {
-    this.service.update(req.params.id, req.body, (err, data) => {
-      if (err) {
-        if (err.message === "Dictionary not found") {
-          return res.status(404).render("error", { error: err.message });
-        }
-        return res.status(400).render("error", { error: err.message });
-      }
-      res.json(data);
-    });
+  async updateDictionary(req, res) {
+    try {
+        const data = await this.service.update(req.params.id, req.body);
+        res.json(data);
+    } catch(err) {
+        if (err.message === "Dictionary not found") return res.status(404).render("error", { error: err.message });
+        res.status(400).render("error", { error: err.message });
+    }
   }
 
-  deleteDictionary(req, res) {
-    this.service.delete(req.params.id, (err, data) => {
-      if (err) {
-        if (err.message === "Dictionary not found") {
-          return res.status(404).render("error", { error: err.message });
-        }
-        return res.status(500).render("error", { error: err.message });
-      }
-      res.json(data);
-    });
+  async deleteDictionary(req, res) {
+    try {
+        const data = await this.service.delete(req.params.id);
+        res.json(data);
+    } catch(err) {
+        if (err.message === "Dictionary not found") return res.status(404).render("error", { error: err.message });
+        res.status(500).render("error", { error: err.message });
+    }
   }
 }
 

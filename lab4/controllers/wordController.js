@@ -5,53 +5,52 @@ class WordController {
     this.service = service;
   }
 
-  getWords(req, res) {
-    this.service
-      .findAll()
-      .then((data) => res.render("words", { words: data }))
-      .catch((err) => res.status(500).render("error", { error: err.message }));
-  }
-
-  getWordById(req, res) {
-    this.service
-      .findOne(req.params.id)
-      .then((data) => {
-        if (!data)
-          return res.status(404).render("error", { error: "Word not found" });
-        res.json(data);
-      })
-      .catch((err) => res.status(500).render("error", { error: err.message }));
-  }
-
-  createWord(req, res) {
-    this.service
-      .create(req.body)
-      .then((data) => res.status(201).json(data))
-      .catch((err) => res.status(400).render("error", { error: err.message }));
-  }
-
-  updateWord(req, res) {
-    this.service
-      .update(req.params.id, req.body)
-      .then((data) => res.json(data))
-      .catch((err) => {
-        if (err.message === "Word not found") {
-          return res.status(404).render("error", { error: err.message });
-        }
-        res.status(400).render("error", { error: err.message });
-      });
-  }
-
-  deleteWord(req, res) {
-    this.service
-      .delete(req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => {
-        if (err.message === "Word not found") {
-          return res.status(404).render("error", { error: err.message });
-        }
+  async getWords(req, res) {
+    try {
+        const data = await this.service.findAll();
+        res.render("words", { words: data });
+    } catch(err) {
         res.status(500).render("error", { error: err.message });
-      });
+    }
+  }
+
+  async getWordById(req, res) {
+    try {
+        const data = await this.service.findOne(req.params.id);
+        if (!data) return res.status(404).render("error", { error: "Word not found" });
+        res.json(data);
+    } catch(err) {
+        res.status(500).render("error", { error: err.message });
+    }
+  }
+
+  async createWord(req, res) {
+    try {
+        const data = await this.service.create(req.body);
+        res.status(201).json(data);
+    } catch(err) {
+        res.status(400).render("error", { error: err.message });
+    }
+  }
+
+  async updateWord(req, res) {
+    try {
+        const data = await this.service.update(req.params.id, req.body);
+        res.json(data);
+    } catch(err) {
+        if (err.message === "Word not found") return res.status(404).render("error", { error: err.message });
+        res.status(400).render("error", { error: err.message });
+    }
+  }
+
+  async deleteWord(req, res) {
+    try {
+        const data = await this.service.delete(req.params.id);
+        res.json(data);
+    } catch(err) {
+        if (err.message === "Word not found") return res.status(404).render("error", { error: err.message });
+        res.status(500).render("error", { error: err.message });
+    }
   }
 }
 
