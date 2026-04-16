@@ -31,6 +31,42 @@
     <% } %>
 
     <br>
+
+    <hr>
+    <h2>Додати нове слово з перекладом (Транзакція)</h2>
+    <form action="/translations/complex" method="POST">
+        <fieldset>
+            <legend>Слово-оригінал</legend>
+            <label for="sourceWordText">Текст:</label>
+            <input type="text" id="sourceWordText" name="sourceWord[text]" required><br><br>
+            
+            <label for="sourceWordLang">ID мови:</label>
+            <input type="number" id="sourceWordLang" name="sourceWord[langId]" required><br><br>
+            
+            <label for="sourceWordDesc">Опис (необов'язково):</label>
+            <input type="text" id="sourceWordDesc" name="sourceWord[description]">
+        </fieldset>
+        <br>
+        
+        <fieldset>
+            <legend>Переклад</legend>
+            <label for="targetWordText">Текст:</label>
+            <input type="text" id="targetWordText" name="targetWord[text]" required><br><br>
+            
+            <label for="targetWordLang">ID мови:</label>
+            <input type="number" id="targetWordLang" name="targetWord[langId]" required><br><br>
+            
+            <label for="targetWordDesc">Опис (необов'язково):</label>
+            <input type="text" id="targetWordDesc" name="targetWord[description]">
+        </fieldset>
+        <br>
+
+        <label for="dictionaryId">ID словника:</label>
+        <input type="number" id="dictionaryId" name="dictionaryId" required><br><br>
+
+        <button type="submit">Створити атомарно</button>
+    </form>
+    
     <a href="/">На головну</a>
 </body>
 </html>
