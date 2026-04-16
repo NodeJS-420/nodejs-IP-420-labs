@@ -24,31 +24,40 @@ class WordController {
     }
   }
 
-  async createWord(req, res) {
+ async createWord(req, res) {
     try {
-        const data = await this.service.create(req.body);
-        res.status(201).json(data);
+        await this.service.create(req.body);
+        res.redirect("/words");
     } catch(err) {
         res.status(400).render("error", { error: err.message });
+    }
+  }
+  async getEditPage(req, res) {
+    try {
+        const word = await this.service.findOne(req.params.id);
+        if (!word) {
+            return res.status(404).render("error", { error: "Слово не знайдено" });
+        }
+        res.render("edit-word", { word });
+    } catch(err) {
+        res.status(500).render("error", { error: err.message });
     }
   }
 
   async updateWord(req, res) {
     try {
-        const data = await this.service.update(req.params.id, req.body);
-        res.json(data);
+        await this.service.update(req.params.id, req.body);
+        res.redirect("/words");
     } catch(err) {
-        if (err.message === "Word not found") return res.status(404).render("error", { error: err.message });
         res.status(400).render("error", { error: err.message });
     }
   }
 
   async deleteWord(req, res) {
     try {
-        const data = await this.service.delete(req.params.id);
-        res.json(data);
+        await this.service.delete(req.params.id);
+        res.redirect("/words");
     } catch(err) {
-        if (err.message === "Word not found") return res.status(404).render("error", { error: err.message });
         res.status(500).render("error", { error: err.message });
     }
   }
