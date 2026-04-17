@@ -85,13 +85,15 @@ class TranslationController {
 
   async createComplexTranslation(req, res) {
     try {
-        const { sourceWord, targetWord, dictionaryId } = req.body;
-        const result = await this.service.addWordWithTranslationAtomically(
-            sourceWord, targetWord, dictionaryId
-        );
-        res.status(201).json(result);
+      const { sourceWord, targetWord, dictionaryId } = req.body;
+      const result = await this.service.addWordWithTranslationAtomically(
+        sourceWord,
+        targetWord,
+        dictionaryId,
+      );
+      res.redirect("/translations");
     } catch (error) {
-        res.status(400).json({ error: error.message });
+      res.status(400).render("error", { error: error.message });
     }
   }
 }
